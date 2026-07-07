@@ -1,18 +1,6 @@
 # 🧠 Neural Accelerator — Multiply and Accumulate (MAC) Unit
 
-> A hardware-based neural network accelerator built around a dedicated MAC datapath, designed for efficient dot-product computation in silicon.
-
----
-
-## 📌 Table of Contents
-
-- [Overview](#overview)
-- [Why Hardware Acceleration?](#why-hardware-acceleration)
-- [MAC Unit Architecture](#mac-unit-architecture)
-- [Port Reference](#port-reference)
-- [Temporal Execution Example](#temporal-execution-example)
-- [RTL Coding Guidelines](#rtl-coding-guidelines)
-- [Future Extensions](#future-extensions)
+> A Multiply and Accumulate Engine 
 
 ---
 
@@ -99,7 +87,6 @@ $$\text{Output} = \text{Bias} + \sum_{i=0}^{N-1} \text{Feature}_i \times \text{W
 | **16-bit product** | `8 × 8` signed multiplication produces a 16-bit intermediate result (`multiplier_prdt`) |
 | **24-bit accumulator** | Prevents overflow when accumulating many products; gives 8 guard bits beyond the 16-bit product |
 | **One-shot bias** | `bias_added` flag ensures bias is injected exactly once per accumulation window, on the first valid cycle |
-| **Byte-slice output** | `out_sel[1:0]` exposes any 8-bit byte lane of the 24-bit accumulator via `selected_output` |
 
 ### `out_sel` Output Mux
 
@@ -137,34 +124,6 @@ clear=1:                            acc = 0, bias_added = 0
 | `out_sel`         | 2      | Input     | Selects 8-bit byte lane from 24-bit accumulator |
 | `selected_output` | 8      | Output    | Selected byte lane of accumulator |
 | `out`             | 24     | Output    | Full 24-bit accumulator value |
-
----
-
-## Temporal Execution Example
-
-A single MAC unit processes inputs over time. Below is a 2-input perceptron example with bias:
-
-$$X = \begin{bmatrix} x_{11} & x_{12} \\ x_{21} & x_{22} \end{bmatrix}, \quad W = \begin{bmatrix} w_1 \\ w_2 \end{bmatrix}, \quad b$$
-
-### Sample 1 — Cycles 1–3
-
-| Cycle | `A_Feature` | `A_Weight` | `valid` | `clear` | `bias_added` | Accumulator |
-|-------|-------------|------------|---------|---------|--------------|-------------|
-| 1 | $x_{11}$ | $w_1$ | 1 | 0 | 0 → **1** | $x_{11}w_1 + b$ |
-| 2 | $x_{21}$ | $w_2$ | 1 | 0 | 1 | $x_{11}w_1 + b + x_{21}w_2$ |
-| 3 | —          | —          | 0 | 1 | **0** | **Read $Y_1$, then clear** |
-
-$$Y_1 = b + x_{11}w_1 + x_{21}w_2$$
-
-### Sample 2 — Cycles 4–6
-
-| Cycle | `A_Feature` | `A_Weight` | `valid` | `clear` | `bias_added` | Accumulator |
-|-------|-------------|------------|---------|---------|--------------|-------------|
-| 4 | $x_{12}$ | $w_1$ | 1 | 0 | 0 → **1** | $x_{12}w_1 + b$ |
-| 5 | $x_{22}$ | $w_2$ | 1 | 0 | 1 | $x_{12}w_1 + b + x_{22}w_2$ |
-| 6 | —          | —          | 0 | 1 | **0** | **Read $Y_2$, then clear** |
-
-$$Y_2 = b + x_{12}w_1 + x_{22}w_2$$
 
 ---
 
@@ -295,5 +254,4 @@ Without pipeline:          With pipeline:
 ---
 
 ## License
-
-This project is open hardware. See [LICENSE](LICENSE) for details.
+no License.
